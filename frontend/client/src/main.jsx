@@ -1,14 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import {BrowserRouter} from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
-import Comp1 from './comp1.jsx'
-import Comp2 from './comp2.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-     <Comp1 name="Tanishq" />
-    <App name="Tanishq" />
-    <Comp2 name="Tanishq" />
+    <BrowserRouter> {/* This is a context provider for routing */}
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 )
