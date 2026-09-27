@@ -8,6 +8,11 @@
 //     response.end("Hello how are you my friend\n");
 //     return;
 //   }
+//   else if (request.method === "POST" && request.url === "/") {
+//     response.writeHead(200, { "Content-Type": "text/plain" });
+//     response.end("This is a POST request to the root route\n");
+//     return;
+//   }
 //   else if(request.url === "/about") {
 //     response.writeHead(200, { "Content-Type": "application/json" });
 //     response.end(JSON.stringify({ message: "This is the about page" }));
@@ -46,15 +51,20 @@
 ////// express server setup
 
 import express from "express";
+import { pushCoursesToDB } from "./push.js";
 import bodyParser from "body-parser";
 import { courses } from "./courses.js";
 import cors from "cors";
 import dotenv from "dotenv";
+import connectDB from "./config/db.js";
 dotenv.config();   // load variables from .env file to process.env
+import authRouter from "./routes/authRoute.js";
 
 const app = express(); // instatiation of express application
 const port = process.env.PORT || 3000;
 
+connectDB(); // connect to MongoDB before starting the server
+pushCoursesToDB();
 
 
 const logger = (req, res, next) => {
@@ -64,31 +74,23 @@ const logger = (req, res, next) => {
 };
 
 
+const errorHandler = (err, req, res, next) => {
+  console.log("Error occurred:");
+  console.error(err);
+  res.status(500).send("Internal Server Error");
+};
+
+
 app.use(bodyParser.json());
 app.use(cors()); // enable CORS for all routes
 app.use(logger); // apply logger middleware to all routes
 
-// DEFINING ROUTES ANF REQUEST METHODS ALSO
-app.get("/", (req, res) => {
-  res.send("Hello how are you my friend");
-});
 
 
-app.get("/about", (req, res) => {
-  res.send("This is the about page");
-});
+app.use("/auth", authRouter); // made possible because of middleware
+app.use(errorHandler); // apply error handler middleware to all routess
 
-app.get("/contact", (req, res) => {
-  res.send("This is the contact page");
-});
 
-app.get("/courses", (req, res) => {
-  res.json(courses);
-});
-
-app.post("/", (req, res) => {
-  res.send("This is a POST request to the root route");
-});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
