@@ -51,21 +51,24 @@
 ////// express server setup
 
 import express from "express";
-import { pushCoursesToDB } from "./push.js";
 import bodyParser from "body-parser";
-import { courses } from "./courses.js";
+import dns from "dns";
+import { courses } from "./models/courses.js";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 dotenv.config();   // load variables from .env file to process.env
 import authRouter from "./routes/authRoute.js";
+import courseRouter from "./routes/courseRoute.js";
+
+
 
 const app = express(); // instatiation of express application
 const port = process.env.PORT || 3000;
+// dns.setServers(["8.8.8.8", "1.1.1.1"]);
+// dns.setDefaultResultOrder("ipv4first");
 
 connectDB(); // connect to MongoDB before starting the server
-pushCoursesToDB();
-
 
 const logger = (req, res, next) => {
   console.log("Request received:TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
@@ -88,6 +91,7 @@ app.use(logger); // apply logger middleware to all routes
 
 
 app.use("/auth", authRouter); // made possible because of middleware
+app.use("/courses", courseRouter);
 app.use(errorHandler); // apply error handler middleware to all routess
 
 

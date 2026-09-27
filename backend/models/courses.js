@@ -45,7 +45,7 @@ import mongoose from "mongoose";
 import { timeStamp } from "node:console";
 
 const courseSchema = new mongoose.Schema({
-  id: { type: String, required: true},
+  id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   category: { type: String, required: true },
   level: { type: String, required: true },

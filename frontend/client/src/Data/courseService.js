@@ -10,7 +10,7 @@ export const getCourses = async ({ shouldFail = false } = {}) => {
     throw new Error("The course catalogue could not be loaded.");
   }
 
-  return courses.map((course) => ({ ...course }));
+  return courses.map((course) => ({ ...course })); // this should call backend now
 };
 
 export const getCourseById = async (courseId) => {

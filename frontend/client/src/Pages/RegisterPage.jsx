@@ -36,7 +36,11 @@ const RegisterPage = () => {
     }
 
     setIsSubmitting(true);
-    register();
+    await register({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+    }); 
     setIsSubmitting(false);
 
     navigate("/courses", { replace: true });

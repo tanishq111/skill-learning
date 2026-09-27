@@ -6,7 +6,8 @@ import {
   ErrorState,
   LoadingState,
 } from "../Components/StatusView.jsx";
-import { getCourses } from "../Data/courseService.js";
+//import { getCourses } from "../Data/courseService.js";
+import { getCourses } from "../api/course.js";
 
 const PAGE_SIZE = 2;
 

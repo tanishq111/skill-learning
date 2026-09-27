@@ -21,7 +21,7 @@ const SignInPage = ({ setUser }) => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
-    signIn();
+    await signIn(values.email, values.password);
     setIsSubmitting(false);
     navigate(location.state?.from?.pathname || "/courses", {
       replace: true,
