@@ -30,6 +30,9 @@ const AppLayout = ({ children }) => {
               </>
             ) : (
               <>
+              <NavLink className="nav-link" to="/user-details">
+                User Details
+              </NavLink>
               <button className="button button--small" onClick={signOut}>
                 Sign out
               </button>

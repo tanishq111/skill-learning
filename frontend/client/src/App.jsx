@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import UserDetails from "./Pages/userDetails.jsx";
 import { AuthProvider } from "./context/authContext.jsx";
-import { Link, Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import CoursePage from "./Pages/CoursePage.jsx";
 import CoursesPage from "./Pages/CoursesPage.jsx";
 import RegisterPage from "./Pages/RegisterPage.jsx";
@@ -28,6 +27,11 @@ const App = () => {
 
         <Route path="/login" element={<SignInPage  />} />
         <Route path="/register" element={<RegisterPage  />} />
+        <Route path="/user-details" element={
+          <ProtectedRoute>
+            <UserDetails />
+          </ProtectedRoute>
+        } />
         <Route path="*" element={<Navigate replace to="/courses" />} />
       </Routes>
       </AppLayout>
