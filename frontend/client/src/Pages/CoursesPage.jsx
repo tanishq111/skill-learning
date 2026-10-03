@@ -24,14 +24,16 @@ const CoursesPage = () => {
     setStatus("loading");
     setErrorMessage("");
 
-    try {
-      const data = await getCourses();
-      setCourses(data);
-      setStatus("success");
-    } catch (error) {
-      setErrorMessage(error.message);
+    const res = await getCourses();
+
+    if (!res.ok) {
+      setErrorMessage(res.error);
       setStatus("error");
+      return;
     }
+
+    setCourses(res.data);
+    setStatus("success");
   };
 
   useEffect(() => {
