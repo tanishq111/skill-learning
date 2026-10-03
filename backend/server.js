@@ -60,6 +60,8 @@ import connectDB from "./config/db.js";
 dotenv.config();   // load variables from .env file to process.env
 import authRouter from "./routes/authRoute.js";
 import courseRouter from "./routes/courseRoute.js";
+import protect from "./middleware/auth.js";
+import { me } from "./controller/userController.js";
 
 
 
@@ -71,7 +73,6 @@ const port = process.env.PORT || 3000;
 connectDB(); // connect to MongoDB before starting the server
 
 const logger = (req, res, next) => {
-  console.log("Request received:TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
   console.log(`${req.method} ${req.url}`);
   next();
 };
@@ -85,15 +86,18 @@ const errorHandler = (err, req, res, next) => {
 
 
 app.use(bodyParser.json());
-app.use(cors()); // enable CORS for all routes
+app.use(cors({
+   origin: "http://localhost:5173",
+   credentials: true
+})); // enable CORS for all routes
 app.use(logger); // apply logger middleware to all routes
 
 
 
 app.use("/auth", authRouter); // made possible because of middleware
 app.use("/courses", courseRouter);
-app.use(errorHandler); // apply error handler middleware to all routess
-
+app.get("/me", protect, me);
+app.use(errorHandler); // apply error handler middleware to all routes
 
 
 app.listen(port, () => {
