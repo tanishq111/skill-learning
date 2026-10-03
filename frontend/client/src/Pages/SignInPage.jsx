@@ -4,13 +4,14 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import FormField from "../Components/FormFields.jsx";
 import { useContext } from "react";
 import { authContext } from "../context/authContext.jsx";
-const SignInPage = ({ setUser }) => {
+const SignInPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signIn } = useContext(authContext);
 
   const [values, setValues] = useState({ email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
 
   const updateField = (event) => {
@@ -20,9 +21,18 @@ const SignInPage = ({ setUser }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setError(null);
     setIsSubmitting(true);
-    await signIn(values.email, values.password);
+
+    const res = await signIn(values.email, values.password);
+
     setIsSubmitting(false);
+
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+
     navigate(location.state?.from?.pathname || "/courses", {
       replace: true,
     });
@@ -35,7 +45,7 @@ const SignInPage = ({ setUser }) => {
         <h1 id="sign-in-title">Sign in</h1>
         <p>Continue your courses and keep learning.</p>
       </div>
-
+      {error && <p className="error">{error}</p>}
       <form className="auth-form" onSubmit={handleSubmit}>
         <FormField
           id="login-email"

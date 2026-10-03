@@ -4,11 +4,9 @@ import { useContext } from "react";
 import { authContext } from "../context/authContext.jsx";
 
 const AppLayout = ({ children }) => {
-  const { user } = useContext(authContext);
-  console.log(user);
+  const { user, signOut } = useContext(authContext);
  return (
     <>
-
       <header className="site-header">
         <div className="header-inner">
           <Link className="brand" to="/courses">
@@ -17,7 +15,7 @@ const AppLayout = ({ children }) => {
           </Link>
 
           <nav className="primary-nav" aria-label="Primary navigation">
-            <span>{user ? `Welcome, ${user}` : ""}</span>  
+            <span>{user ? `Welcome, ${user.name}` : ""}</span>
             <NavLink className="nav-link" to="/courses">
               Courses
             </NavLink>
@@ -30,7 +28,13 @@ const AppLayout = ({ children }) => {
                   Create account
                 </Link>
               </>
-            ) : null}
+            ) : (
+              <>
+              <button className="button button--small" onClick={signOut}>
+                Sign out
+              </button>
+              </>
+            )}
           </nav>
         </div>
       </header>

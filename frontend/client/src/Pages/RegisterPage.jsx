@@ -18,17 +18,19 @@ const RegisterPage = () => {
   });
  
   const [passwordError, setPasswordError] = useState("");
+  const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateField = (event) => {
     const { name, value } = event.target; // "name", "email", "password", or "confirmPassword"
-    console.log(values);
     setValues((current) => ({ ...current, [name]: value }));
     setPasswordError("");
+    setFormError("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setFormError("");
 
     if (values.password !== values.confirmPassword) {
       setPasswordError("Passwords do not match.");
@@ -36,12 +38,19 @@ const RegisterPage = () => {
     }
 
     setIsSubmitting(true);
-    await register({
+
+    const res = await register({
       name: values.name,
       email: values.email,
       password: values.password,
-    }); 
+    });
+
     setIsSubmitting(false);
+
+    if (!res.ok) {
+      setFormError(res.error);
+      return;
+    }
 
     navigate("/courses", { replace: true });
   };
@@ -95,6 +104,12 @@ const RegisterPage = () => {
           error={passwordError}
           required
         />
+
+        {formError ? (
+          <p className="form-error" role="alert">
+            {formError}
+          </p>
+        ) : null}
 
         <button className="button" type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Creating account..." : "Create account"}
