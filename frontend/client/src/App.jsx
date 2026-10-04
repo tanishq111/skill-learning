@@ -8,6 +8,8 @@ import SignInPage from "./Pages/SignInPage.jsx";
 import ProtectedRoute from "./Components/ProtectedRoute.jsx";
 import "./App.css";
 import AppLayout from "./Components/AppLayout";
+import InstructorDashboard from "./Pages/InstructorDashboard.jsx";
+import CourseFormPage from "./Pages/CourseFormPage.jsx";
 
 
 const App = () => {
@@ -19,9 +21,20 @@ const App = () => {
         <Route path="/" element={<Navigate replace to="/courses" />} />
         <Route path="/courses" element={<CoursesPage  />} />
  
+        <Route path="/my-courses" element={
+          <ProtectedRoute allowedRoles={["instructor"]}>
+            <InstructorDashboard />
+          </ProtectedRoute>
+        } /> 
         <Route path="/courses/:courseId" element={
           <ProtectedRoute allowedRoles={["student", "instructor"]}>
             <CoursePage />
+          </ProtectedRoute>
+        } /> 
+
+        <Route path="/create-course" element={
+          <ProtectedRoute allowedRoles={["instructor"]}>
+          <CourseFormPage />
           </ProtectedRoute>
         } /> 
 

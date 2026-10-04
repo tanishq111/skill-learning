@@ -30,6 +30,16 @@ const AppLayout = ({ children }) => {
               </>
             ) : (
               <>
+              {user?.role == "instructor" && (
+                <NavLink className="nav-link" to="/my-courses">
+                 My Courses
+                </NavLink>
+              )}
+              {user?.role == "instructor" && (
+                <NavLink className="nav-link" to="/create-course">
+                 Create Course
+                </NavLink>
+              )}
               <NavLink className="nav-link" to="/user-details">
                 User Details
               </NavLink>
