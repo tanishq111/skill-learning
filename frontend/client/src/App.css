@@ -244,6 +244,65 @@ h1 {
   background: white;
 }
 
+.field input[aria-invalid="true"] {
+  border-color: #b42318;
+}
+
+.field__hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.field__error {
+  color: #b42318;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+.form-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 48px;
+}
+
+.form-page__intro h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+}
+
+.form-page__intro > p {
+  max-width: 420px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.auth-form {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px rgba(23, 51, 47, 0.08);
+}
+
+/* `.error` is the sign-in page's spelling of `.form-error`. */
+.form-error,
+.error {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 4px solid #b42318;
+  color: #b42318;
+  background: rgba(180, 35, 24, 0.07);
+  font-weight: 700;
+}
+
 .results-summary {
   color: var(--muted);
 }
@@ -410,6 +469,103 @@ h1 {
   padding-left: 6px;
 }
 
+.course-detail__instructor {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+}
+
+.course-admin-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.course-admin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.course-admin-row h2 {
+  margin: 0 0 8px;
+  font-family: "Fraunces", serif;
+  font-size: 1.15rem;
+}
+
+.course-admin-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.course-admin-row__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.badge {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge--draft {
+  color: #7a5b00;
+  background: rgba(242, 187, 60, 0.3);
+}
+
+.badge--published {
+  color: var(--teal-dark);
+  background: rgba(8, 127, 109, 0.14);
+}
+
+.button--ghost {
+  color: var(--teal-dark);
+  background: transparent;
+}
+
+.button--ghost:hover {
+  color: white;
+}
+
+.button--danger {
+  border-color: #b42318;
+  color: #b42318;
+  background: transparent;
+}
+
+.button--danger:hover {
+  border-color: #8f1b13;
+  color: white;
+  background: #b42318;
+}
+
 @media (max-width: 700px) {
   .header-inner {
     min-height: auto;
@@ -437,12 +593,20 @@ h1 {
   .course-list,
   .catalogue-controls,
   .course-grid,
-  .course-detail__hero {
+  .course-detail__hero,
+  .form-page {
     grid-template-columns: 1fr;
   }
 
   .page-heading {
     gap: 18px;
+  }
+
+  .page-header,
+  .course-admin-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .course-link {
@@ -451,6 +615,7 @@ h1 {
 
   .status-view,
   .catalogue-controls,
+  .auth-form,
   .course-card__body {
     padding: 18px;
   }
