@@ -45,8 +45,8 @@ const PublicUser = (user) => {
 
 const register = async (req, res) => {
     try {
-        const { name, email, password } = req.body; // no consideration of role during registration
-        const user = new User({ name, email, password }); // model
+        const { name, email, password, role } = req.body;
+        const user = new User({ name, email, password, role }); // model
         // check if user already exists
         const existingUser = await User.findOne({ email });
         console.log("Checking if user already exists with email:", email);
