@@ -14,11 +14,12 @@ const issueRefreshToken = (user) => {
 };
 
 // The refresh token never reaches JS on the client; only the browser can send it back.
+const isProd = process.env.NODE_ENV === "production";
 const setRefreshCookie = (res, user) => {
     res.cookie(REFRESH_COOKIE, issueRefreshToken(user), { // key value thing -> in cookies refreshTokenCookie -> the refresh token
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: isProd,
+        sameSite: isProd ? "none" : "strict", // cross-site cookie needs none+secure in prod
         path: "/auth",
         maxAge: REFRESH_MAX_AGE_MS,
     });
@@ -27,8 +28,8 @@ const setRefreshCookie = (res, user) => {
 const clearRefreshCookie = (res) => {
     res.clearCookie(REFRESH_COOKIE, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: isProd,
+        sameSite: isProd ? "none" : "strict",
         path: "/auth",
     });
 };
