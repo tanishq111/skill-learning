@@ -2,6 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://localhost:3000",
+  withCredentials: true, // required for the httpOnly refresh cookie to travel
 });
 
 
@@ -20,7 +21,6 @@ const REFRESH_URL = "/auth/refresh";
 const endSession = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
-  localStorage.removeItem("refreshToken");
   window.location.href = "/login";
 };
 
@@ -62,19 +62,13 @@ api.interceptors.response.use(
             return failure;
         }
 
-        const storedRefreshToken = localStorage.getItem("refreshToken");
-
-        if (!storedRefreshToken) {
-            endSession();
-            return failure;
-        }
-
         original._retried = true;
 
+        // mechanism to refresh the token if it has expired
         refreshPromise =
             refreshPromise ||
             api
-                .post(REFRESH_URL, { refreshToken: storedRefreshToken })
+                .post(REFRESH_URL)
                 .finally(() => {
                     refreshPromise = null;
                 });
@@ -87,8 +81,8 @@ api.interceptors.response.use(
         }
 
         localStorage.setItem("token", refreshed.data.token);
-        if (refreshed.data.refreshToken) {
-            localStorage.setItem("refreshToken", refreshed.data.refreshToken);
+        if (refreshed.data.user) {
+            localStorage.setItem("user", JSON.stringify(refreshed.data.user));
         }
 
         return api(original); // replay the original request with the new token

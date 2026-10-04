@@ -55,6 +55,7 @@ import bodyParser from "body-parser";
 import dns from "dns";
 import { courses } from "./models/courses.js";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 dotenv.config();   // load variables from .env file to process.env
@@ -86,6 +87,7 @@ const errorHandler = (err, req, res, next) => {
 
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(cors({
    origin: "http://localhost:5173",
    credentials: true

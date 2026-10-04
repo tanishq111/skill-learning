@@ -1,5 +1,5 @@
 import { createContext,useState,useEffect } from "react";
-import { login as apiLogin, register as apiRegister, getMe } from "../api/auth";
+import { login as apiLogin, register as apiRegister, getMe, logout as apiLogout } from "../api/auth";
 
 const authContext = createContext(null);
 
@@ -25,7 +25,6 @@ const AuthProvider = ( {children}) => {
         } catch {
             localStorage.removeItem("user");
             localStorage.removeItem("token");
-            localStorage.removeItem("refreshToken");
             setLoading(false);
             return;
         }
@@ -38,7 +37,6 @@ const AuthProvider = ( {children}) => {
                 } else {
                     localStorage.removeItem("user");
                     localStorage.removeItem("token");
-                    localStorage.removeItem("refreshToken");
                     setUser(null);
                 }
             })
@@ -47,35 +45,32 @@ const AuthProvider = ( {children}) => {
             });
     },[]);
 
-    const saveSession = (user, token, refreshToken = null) => {
+    const saveSession = (user, token) => {
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("token", token);
-        if (refreshToken) {
-            localStorage.setItem("refreshToken", refreshToken);
-        }
     };
 
     const signIn = async (email, password) => {
         const res = await apiLogin(email, password);
         if (res.ok) {
             setUser(res.data.user);
-            saveSession(res.data.user, res.data.token, res.data.refreshToken);
+            saveSession(res.data.user, res.data.token);
         }
         return res;
     };
 
-    const signOut = () => {
+    const signOut = async () => {
+        await apiLogout(); // clears the httpOnly refresh cookie
         setUser(null);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
     };
 
     const register = async (userData) => {
         const res = await apiRegister(userData);
         if (res.ok) {
             setUser(res.data.user);
-            saveSession(res.data.user, res.data.token, res.data.refreshToken);
+            saveSession(res.data.user, res.data.token);
         }
         return res;
     };
