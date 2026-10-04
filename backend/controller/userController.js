@@ -113,6 +113,21 @@ const logout = async (req, res) => {
 };
 
 
+const promoteToInstructor = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        user.role = "instructor";
+        await user.save();
+        res.status(200).json({ user: PublicUser(user) });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+
 const me = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -126,4 +141,4 @@ const me = async (req, res) => {
 };
 // api to update enrollerd courese
 
-export { register, login, PublicUser, generateToken, issueRefreshToken, me, refresh, logout };
+export { register, login, PublicUser, generateToken, issueRefreshToken, me, refresh, logout , promoteToInstructor };

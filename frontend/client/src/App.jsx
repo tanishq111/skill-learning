@@ -20,7 +20,7 @@ const App = () => {
         <Route path="/courses" element={<CoursesPage  />} />
  
         <Route path="/courses/:courseId" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["student", "instructor"]}>
             <CoursePage />
           </ProtectedRoute>
         } /> 
@@ -28,7 +28,7 @@ const App = () => {
         <Route path="/login" element={<SignInPage  />} />
         <Route path="/register" element={<RegisterPage  />} />
         <Route path="/user-details" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["student", "admin"]}>
             <UserDetails />
           </ProtectedRoute>
         } />

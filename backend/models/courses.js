@@ -42,17 +42,19 @@ export const courses = [
 
 // moongoose schema for courses (if using a database like MongoDB with Mongoose)
 import mongoose from "mongoose";
-import { timeStamp } from "node:console";
+
 
 const courseSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
   category: { type: String, required: true },
   level: { type: String, required: true },
-  instructor: { type: String, required: true },
-  lessonCount: { type: Number, required: true },
-  priceInr: { type: Number, required: true },
-}, {timestamps   : true});
-// tomorrwo you want to add description field to the schema -> you can directly do it without adding in schema also
+  instructor: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  priceInr: { type: Number, required: true, min: 0 },
+  description: { type: String, default: "" },
+  rating: { type: Number, default: 0, min: 0, max: 5 },
+  status: { type: String, enum: ["draft", "published"], default: "draft" },
+}, { timestamps: true });
+
 
 export const Course = mongoose.model("Course", courseSchema); // this is my course collection

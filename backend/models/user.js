@@ -6,8 +6,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
-  role: { type: String, enum: ["student", "instructor"], default: "student" },
+  role: { type: String, enum: ["student", "instructor", "admin"], default: "student" },
 }, { timestamps: true });
+// list of addedCourses
+// query the courses accoring useId filter
 
 
 
