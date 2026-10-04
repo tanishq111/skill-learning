@@ -15,6 +15,7 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    role: "",
   });
  
   const [passwordError, setPasswordError] = useState("");
@@ -43,6 +44,7 @@ const RegisterPage = () => {
       name: values.name,
       email: values.email,
       password: values.password,
+      role: values.role,
     });
 
     setIsSubmitting(false);
@@ -102,6 +104,16 @@ const RegisterPage = () => {
           value={values.confirmPassword}
           onChange={updateField}
           error={passwordError}
+          required
+        />
+
+        <FormField
+          id="role"
+          label="Role"
+          name="role"
+          type="text"
+          value={values.role}
+          onChange={updateField}
           required
         />
 
