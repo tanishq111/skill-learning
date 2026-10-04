@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { authContext } from "../context/authContext.jsx";
 
 const formatPrice = (priceInr, user) => {
-  if (priceInr === 0 || user) {
+  if (priceInr === 0 ) {
     return "Free";
   }
 
@@ -51,7 +51,7 @@ const CourseCard = ({ course }) => {
 
         <div className="course-card__footer">
           <strong>{formatPrice(course.priceInr, user)}</strong>
-          <Link className="text-link" to={`/courses/${course.id}`}>
+          <Link className="text-link" to={`/courses/${course._id}`}>
             View course
             <ArrowRight aria-hidden="true" size={18} />
           </Link>

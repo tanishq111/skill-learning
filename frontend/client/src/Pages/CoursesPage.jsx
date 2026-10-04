@@ -152,7 +152,7 @@ const CoursesPage = () => {
 
           <div className="course-grid">
             {visibleCourses.map((course) => ( // array to traverse the coursesMap
-              <CourseCard key={course.id} course={course} />
+              <CourseCard key={course._id} course={course} />
             ))}
           </div>
 
