@@ -5,24 +5,39 @@ import { LoadingState, EmptyState, ErrorState } from "../Components/StatusView";
 
 const InstructorDashboard = () => {
   const [courses, setCourses] = useState([]);
-  const [status, setStatus] = useState("loading");
+  const [loadStatus, setLoadStatus] = useState("loading");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState({ page: 1, total: 0, totalPages: 0 });
+  const [retryCount, setRetryCount] = useState(0);
   const [error, setError] = useState("");
 
-  const load = async () => {
-    setStatus("loading");
-    const res = await getMyCourses();
-    if (res.ok) {
-      setCourses(res.data);
-      setStatus("ready");
-    } else {
-      setError(res.error);
-      setStatus("error");
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, []);
+    let cancelled = false;
+    setLoadStatus("loading");
+    setError("");
+
+    getMyCourses({ status: statusFilter || undefined, page }).then((res) => {
+      if (cancelled) return;
+      if (res.ok) {
+        setCourses(res.data.data);
+        setMeta(res.data.meta);
+        setLoadStatus("ready");
+      } else {
+        setError(res.error);
+        setLoadStatus("error");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, retryCount, statusFilter]);
+
+  const handleStatusChange = (event) => {
+    setStatusFilter(event.target.value);
+    setPage(1);
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this course? This cannot be undone.")) {
@@ -36,8 +51,10 @@ const InstructorDashboard = () => {
     }
   };
 
-  if (status === "loading") return <LoadingState message="Loading your courses..." />;
-  if (status === "error") return <ErrorState message={error} onRetry={load} />;
+  if (loadStatus === "loading") return <LoadingState message="Loading your courses..." />;
+  if (loadStatus === "error") {
+    return <ErrorState message={error} onRetry={() => setRetryCount((count) => count + 1)} />;
+  }
 
   return (
     <section className="catalogue-page" aria-labelledby="dashboard-title">
@@ -46,7 +63,16 @@ const InstructorDashboard = () => {
           <p className="eyebrow">Instructor</p>
           <h1 id="dashboard-title">Your courses</h1>
         </div>
-        <Link className="button" to="/teach/new">New course</Link>
+        <Link className="button" to="/create-course">New course</Link>
+      </div>
+
+      <div className="field">
+        <label htmlFor="course-status-filter">Status</label>
+        <select id="course-status-filter" value={statusFilter} onChange={handleStatusChange}>
+          <option value="">All courses</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
       </div>
 
       {courses.length === 0 ? (
@@ -65,7 +91,7 @@ const InstructorDashboard = () => {
                 </p>
               </div>
               <div className="course-admin-row__actions">
-                <Link className="button button--small button--ghost" to={`/teach/${course._id}/edit`}>
+                <Link className="button button--small button--ghost" to={`/edit/${course._id}`}>
                   Edit
                 </Link>
                 <button
@@ -80,6 +106,22 @@ const InstructorDashboard = () => {
           ))}
         </ul>
       )}
+
+      {meta.totalPages > 1 ? (
+        <nav className="pagination" aria-label="Your course pages">
+          <button type="button" onClick={() => setPage((current) => current - 1)} disabled={page === 1}>
+            Previous
+          </button>
+          <span>Page {meta.page} of {meta.totalPages}</span>
+          <button
+            type="button"
+            onClick={() => setPage((current) => current + 1)}
+            disabled={page === meta.totalPages}
+          >
+            Next
+          </button>
+        </nav>
+      ) : null}
     </section>
   );
 };

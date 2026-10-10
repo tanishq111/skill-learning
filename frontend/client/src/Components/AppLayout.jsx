@@ -2,6 +2,7 @@ import {BookOpenCheck} from "lucide-react";
 import {Link, NavLink} from "react-router-dom";
 import { useContext } from "react";
 import { authContext } from "../context/authContext.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 const AppLayout = ({ children }) => {
   const { user, signOut } = useContext(authContext);
@@ -43,6 +44,7 @@ const AppLayout = ({ children }) => {
               <NavLink className="nav-link" to="/user-details">
                 User Details
               </NavLink>
+              <NotificationBell />
               <button className="button button--small" onClick={signOut}>
                 Sign out
               </button>

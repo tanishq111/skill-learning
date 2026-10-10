@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import FormField from "../Components/FormFields";
-import { createCourse, updateCourse, getCourses } from "../api/course";
+import { createCourse, updateCourse, getCourseById } from "../api/course";
 
 const EMPTY = {
   title: "",
@@ -14,7 +14,7 @@ const EMPTY = {
 };
 
 const CourseFormPage = () => {
-  const { courseId } = useParams(); // if it is an edit 
+  const { id: courseId } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(courseId);
 
@@ -24,8 +24,21 @@ const CourseFormPage = () => {
 
   useEffect(() => {
     if (!isEdit) return;
-    getCourses(courseId).then((res) => {
-      if (res.ok) setValues(res.data);
+
+    getCourseById(courseId).then((res) => {
+      if (!res.ok) {
+        setErrors({ form: res.error });
+        return;
+      }
+      setValues({
+        title: res.data.title ?? "",
+        slug: res.data.slug ?? "",
+        category: res.data.category ?? "",
+        level: res.data.level ?? "Beginner",
+        priceInr: res.data.priceInr ?? 0,
+        description: res.data.description ?? "",
+        status: res.data.status ?? "draft",
+      });
     });
   }, [courseId, isEdit]);
 
@@ -47,7 +60,7 @@ const CourseFormPage = () => {
     setSubmitting(false);
 
     if (res.ok) {
-      navigate("/teach");
+      navigate("/my-courses");
       return;
     }
     if (res.status === 403) {

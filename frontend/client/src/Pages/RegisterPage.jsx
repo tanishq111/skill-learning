@@ -6,6 +6,11 @@ import FormField from "../Components/FormFields.jsx";
 import { useContext } from "react";
 import { authContext } from "../context/authContext.jsx";
 
+const ROLE_OPTIONS = [
+  { value: "student", label: "Student" },
+  { value: "instructor", label: "Instructor" },
+];
+
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { register } = useContext(authContext);
@@ -15,7 +20,7 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
+    role: "student",
   });
  
   const [passwordError, setPasswordError] = useState("");
@@ -54,7 +59,9 @@ const RegisterPage = () => {
       return;
     }
 
-    navigate("/courses", { replace: true });
+    navigate(res.data.user.role === "instructor" ? "/my-courses" : "/courses", {
+      replace: true,
+    });
   };
 
   return (
@@ -108,12 +115,12 @@ const RegisterPage = () => {
         />
 
         <FormField
-          id="role"
-          label="Role"
+          id="register-role"
+          label="Account type"
           name="role"
-          type="text"
           value={values.role}
           onChange={updateField}
+          options={ROLE_OPTIONS}
           required
         />
 

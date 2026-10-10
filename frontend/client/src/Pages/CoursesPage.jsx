@@ -32,7 +32,7 @@ const CoursesPage = () => {
       return;
     }
 
-    setCourses(res.data);
+    setCourses(res.data.data);
     setStatus("success");
   };
 

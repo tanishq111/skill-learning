@@ -39,6 +39,7 @@ api.interceptors.response.use(
         const original = error.config || {};
         const url = original.url || "";
         const status = error.response?.status;
+        const code = error.response?.data?.code;
 
         const failure = {
             ok: false,
@@ -53,6 +54,11 @@ api.interceptors.response.use(
 
         // A failed login is not an expired session.
         if (status !== 401 || isAuthAttempt) {
+            return failure;
+        }
+
+        if (code === "TOKEN_INVALID") {
+            endSession();
             return failure;
         }
 

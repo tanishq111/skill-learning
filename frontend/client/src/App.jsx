@@ -38,6 +38,11 @@ const App = () => {
           </ProtectedRoute>
         } /> 
 
+        <Route path="/edit/:id" element={
+          <ProtectedRoute allowedRoles={["instructor"]}>
+            <CourseFormPage />
+          </ProtectedRoute>
+        } />
         <Route path="/login" element={<SignInPage  />} />
         <Route path="/register" element={<RegisterPage  />} />
         <Route path="/user-details" element={
