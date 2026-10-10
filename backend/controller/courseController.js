@@ -1,8 +1,25 @@
 import { Course } from "../models/courses.js";
-const getCourses =  async (req, res) => {
-    const courseList = await Course.find(); 
-    console.log(courseList);
-    res.status(200).json(courseList);
+
+const SORTABLE = new Set(["createdAt", "title", "priceInr", "rating"]);
+
+const getCourses = async (req, res, next) => {
+    try {
+        const filter = { status: "published" };
+        if (req.query.instructor) filter.instructor = req.query.instructor;
+        if (req.query.level) filter.level = req.query.level;
+        if (req.query.category) filter.category = req.query.category;
+
+        const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+        const courses = await Course.find(filter)
+            .populate("instructor", "name")
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .lean();
+
+        res.status(200).json({ data: courses, meta: { count: courses.length } });
+    } catch (error) {
+        next(error);
+    }
 };
 
 // will be behind authentication middleware to get the instructor from the token
@@ -26,21 +43,17 @@ const createCourse = async (req, res) => {
 };
 
 // this will be restricted to the instructor who created the course
-const updateCourse = async (req, res) => {
-     try{
-        const { id } = req.params;
-        const course = await Course.findById(id);
-        if (!course) {
-            return res.status(404).json({ error: "Course not found" });
-        }
-        if (course.instructor.equals(req.user.id) === false) { // this is only allowing the instructor who created the course to update it
-            return res.status(403).json({ error: "You are not authorized to update this course" });
-        }
-        Object.assign(course, req.body);
-        await course.save();
-        res.status(200).json(course);
+const updateCourse = async (req, res, next) => {
+     try {
+        const immutableFields = ["instructor", "_id", "createdAt", "rating"];
+        const updates = { ...req.body };
+        immutableFields.forEach((field) => delete updates[field]);
+
+        Object.assign(req.course, updates);
+        await req.course.save();
+        res.status(200).json(req.course);
      } catch (error) {
-         res.status(400).json({ error: error.message });
+         next(error);
      }
 
 };
@@ -49,7 +62,7 @@ const updateCourse = async (req, res) => {
 const getCourseById = async (req, res) => {
     try {
         const { id } = req.params;
-        const course = await Course.findById(id);
+        const course = await Course.findById(id).populate("instructor", "name");
         if (!course) {
             return res.status(404).json({ error: "Course not found" });
         }
@@ -59,30 +72,43 @@ const getCourseById = async (req, res) => {
     }
 };
 
-const getMyCourses = async (req, res) => { 
+const getMyCourses = async (req, res, next) => {
     try {
-        const courses = await Course.find({ instructor: req.user.id });
-        res.status(200).json(courses);
+        const page = Math.max(1, Number(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 12));
+        const sort = SORTABLE.has(req.query.sort) ? req.query.sort : "createdAt";
+        const order = req.query.order === "asc" ? 1 : -1;
+
+        const filter = { instructor: req.user.id };
+        if (["draft", "published"].includes(req.query.status)) {
+            filter.status = req.query.status;
+        }
+
+        const [courses, total] = await Promise.all([
+            Course.find(filter)
+                .sort({ [sort]: order })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(),
+            Course.countDocuments(filter),
+        ]);
+
+        res.status(200).json({
+            data: courses,
+            meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        next(error);
     }
 };
 
 // restricted to the instructor who created the course
-const deleteCourse = async (req, res) => {
+const deleteCourse = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const course = await Course.findById(id);
-        if (!course) {
-            return res.status(404).json({ error: "Course not found" });
-        }
-        if (course.instructor.equals(req.user.id) === false) {
-            return res.status(403).json({ error: "You are not authorized to delete this course" });
-        }
-        await course.deleteOne();
+        await req.course.deleteOne();
         res.status(204).end();
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        next(error);
     }
 };
 

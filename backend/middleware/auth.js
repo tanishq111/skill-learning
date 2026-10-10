@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
+import User from "../models/user.js";
 
 const protect = (req, res, next) => {
-    // it does not ready any thing relted to role.
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
         return res.status(401).json({ error: "Not authorized" });
@@ -11,7 +11,8 @@ const protect = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (error) {
-        res.status(401).json({ error: "Not authorized" });
+        const code = error.name === "TokenExpiredError" ? "TOKEN_EXPIRED" : "TOKEN_INVALID";
+        return res.status(401).json({ error: "Not authorized", code });
     }
 };
 
@@ -25,5 +26,22 @@ const restricTo = (...allowedRoles) => {
     };
 };
 
-export { protect, restricTo };
+const restricToFresh = (...allowedRoles) => async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id).select("role");
+        if (!user) {
+            return res.status(401).json({ error: "Account no longer exists" });
+        }
+        if (!allowedRoles.includes(user.role)) {
+            return res.status(403).json({ error: "Forbidden" });
+        }
+
+        req.user.role = user.role;
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+export { protect, restricTo, restricToFresh };
 export default protect;

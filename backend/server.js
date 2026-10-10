@@ -62,12 +62,17 @@ dotenv.config();   // load variables from .env file to process.env
 import authRouter from "./routes/authRoute.js";
 import courseRouter from "./routes/courseRoute.js";
 import userRouter from "./routes/userRoute.js";
+import notificationRouter from "./routes/notificationRoute.js";
 import protect from "./middleware/auth.js";
 import { me } from "./controller/userController.js";
-
+import { createServer } from "node:http";
+import { initSocket } from "./socket/io.js";
 
 
 const app = express(); // instatiation of express application
+const httpServer = createServer(app);
+initSocket(httpServer);
+
 const port = process.env.PORT || 3000;
 // dns.setServers(["8.8.8.8", "1.1.1.1"]);
 // dns.setDefaultResultOrder("ipv4first");
@@ -90,7 +95,7 @@ const errorHandler = (err, req, res, next) => {
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(cors({
-   origin: "http://localhost:5173",
+   origin: "http://localhost:5175",
    credentials: true
 })); // enable CORS for all routes
 app.use(logger); // apply logger middleware to all routes
@@ -100,12 +105,13 @@ app.use(logger); // apply logger middleware to all routes
 app.use("/auth", authRouter); // made possible because of middleware
 app.use("/courses", courseRouter);
 app.use("/users", userRouter);
+app.use("/notifications", notificationRouter);
 app.get("/me", protect, me);
 app.use(errorHandler); // apply error handler middleware to all routes
 
 
 if(process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
+  httpServer.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
 }

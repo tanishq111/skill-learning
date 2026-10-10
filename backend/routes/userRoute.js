@@ -1,8 +1,8 @@
 import express from "express";
-import { promoteToInstructor } from "../controller/userController.js";
-import { protect, restricTo } from "../middleware/auth.js";
+import { changeUserRole } from "../controller/userController.js";
+import { protect, restricToFresh } from "../middleware/auth.js";
 const router = express.Router();
 
-router.patch("/promote/:id", protect, restricTo("admin"), promoteToInstructor);
+router.patch("/promote/:id", protect, restricToFresh("admin"), changeUserRole);
 
 export default router;

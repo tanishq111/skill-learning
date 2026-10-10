@@ -34,7 +34,7 @@ const clearRefreshCookie = (res) => {
     });
 };
 
-const PublicUser = (user) => {
+const toPublicUser = (user) => {
     return {
         id: user._id,
         name: user.name,
@@ -44,24 +44,51 @@ const PublicUser = (user) => {
     };
 };
 
-const register = async (req, res) => {
+const SIGNUP_ROLES = ["student", "instructor"];
+
+const register = async (req, res, next) => {
     try {
-        const { name, email, password, role } = req.body;
-        const user = new User({ name, email, password, role }); // model
-        // check if user already exists
-        const existingUser = await User.findOne({ email });
-        console.log("Checking if user already exists with email:", email);
-        if (existingUser) {
-            return res.status(400).json({ error: "User already exists" });
+        const { name, email, password, role = "student" } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: "name, email and password are required" });
         }
-        console.log("Saving new user with email:", email);
-        await user.save();
+        if (typeof password !== "string" || password.length < 8) {
+            return res.status(400).json({ error: "Password must be at least 8 characters" });
+        }
+        if (!SIGNUP_ROLES.includes(role)) {
+            return res.status(400).json({ error: `role must be one of: ${SIGNUP_ROLES.join(", ")}` });
+        }
+
+        const normalizedName = String(name).trim();
+        const normalizedEmail = String(email).trim().toLowerCase();
+        if (!normalizedName || !normalizedEmail) {
+            return res.status(400).json({ error: "name, email and password are required" });
+        }
+
+        const existingUser = await User.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(409).json({ error: "An account with this email already exists" });
+        }
+
+        const user = await User.create({
+            name: normalizedName,
+            email: normalizedEmail,
+            password,
+            role,
+        });
+
+        const token = generateToken(user);
+        setRefreshCookie(res, user);
         res.status(201).json({
-            user: PublicUser(user),
-            token: generateToken(user)
+            user: toPublicUser(user),
+            token,
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        if (error.code === 11000) {
+            return res.status(409).json({ error: "An account with this email already exists" });
+        }
+        next(error);
     }
 };
 
@@ -69,7 +96,8 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        const normalizedEmail = String(email ?? "").trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail }).select("+password");
         if (!user) {
             return res.status(400).json({ error: "Invalid email or password" });
         }
@@ -79,7 +107,7 @@ const login = async (req, res) => {
             return res.status(400).json({ error: "Invalid email or password" });
         }
         setRefreshCookie(res, user);
-        res.status(200).json({ user: PublicUser(user), token: generateToken(user) });
+        res.status(200).json({ user: toPublicUser(user), token: generateToken(user) });
 
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -101,7 +129,7 @@ const refresh = async (req, res) => {
             return res.status(401).json({ error: "Not authorized" });
         }
         setRefreshCookie(res, user); // rotate on every use // should we issue new refresh when it is expired ?
-        res.status(200).json({ token: generateToken(user), user: PublicUser(user) });
+        res.status(200).json({ token: generateToken(user), user: toPublicUser(user) });
     } catch {
         clearRefreshCookie(res);
         res.status(401).json({ error: "Not authorized" });
@@ -114,17 +142,32 @@ const logout = async (req, res) => {
 };
 
 
-const promoteToInstructor = async (req, res) => {
+const ROLES = ["student", "instructor", "admin"];
+
+const changeUserRole = async (req, res, next) => {
     try {
-        const user = await User.findById(req.params.id);
+        const { role } = req.body;
+
+        if (!ROLES.includes(role)) {
+            return res.status(400).json({ error: `role must be one of: ${ROLES.join(", ")}` });
+        }
+        if (req.params.id === req.user.id) {
+            return res.status(403).json({ error: "You cannot change your own role" });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { role },
+            { new: true, runValidators: true }
+        );
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        user.role = "instructor";
-        await user.save();
-        res.status(200).json({ user: PublicUser(user) });
+
+        console.warn(`[audit] ${req.user.id} set role=${role} on user ${user._id}`);
+        res.status(200).json({ user: toPublicUser(user) });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -135,11 +178,23 @@ const me = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.status(200).json({ user: PublicUser(user) });
+        res.status(200).json({ user: toPublicUser(user) });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
 // api to update enrollerd courese
 
-export { register, login, PublicUser, generateToken, issueRefreshToken, me, refresh, logout , promoteToInstructor };
+export {
+    register,
+    login,
+    toPublicUser,
+    toPublicUser as PublicUser,
+    generateToken,
+    issueRefreshToken,
+    me,
+    refresh,
+    logout,
+    changeUserRole,
+    changeUserRole as promoteToInstructor,
+};
